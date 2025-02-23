@@ -9,3 +9,9 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# any draft file
+*draft*
+
+# Log files
+logs/

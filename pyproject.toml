@@ -15,10 +15,8 @@ dependencies = [
     "skforecast>=0.14.0",
     "tiktoken>=0.9.0",
     "jedi>=0.19.2",
-    "pyright>=1.1.394",
     "libcst>=1.6.0",
     "pydot>=3.0.4",
-    "pyan3==1.1.1",
     "langchain-neo4j>=0.3.0",
-    "langchain-openai>=0.3.6",
+    "langchain-openai>=0.3.6"
 ]

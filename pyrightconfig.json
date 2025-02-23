@@ -1,6 +1,0 @@
-{
-    "venvPath": "C:/Projects/codebase_rag/.venv",
-    "venv": "Lib/site-packages",
-    "include": ["C:/Projects/codebase_rag/.venv/Lib/site-packages/skforecast"],
-    "useLibraryCodeForTypes": true
-}
