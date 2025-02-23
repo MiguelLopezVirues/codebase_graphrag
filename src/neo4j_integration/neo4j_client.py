@@ -5,7 +5,6 @@ def push_graph_to_neo4j(G, uri, user, password):
     """
     Push the NetworkX graph G to a Neo4j database.
     """
-    print(password)
     driver = GraphDatabase.driver(uri, auth=(user, password))
     with driver.session() as session:
         logger.info("Clearing existing data in Neo4j...")

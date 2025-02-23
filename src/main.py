@@ -7,7 +7,7 @@ def main(file_path):
     logger.info("Starting graph building process...")
     builder = GraphBuilder(file_path)
     graph = builder.build()
-    logger.info(f"Graph built with {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges.")
+    print(f"Graph built with {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges.")
 
     push_graph_to_neo4j(graph, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
 
