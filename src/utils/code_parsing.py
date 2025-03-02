@@ -4,6 +4,7 @@ import os
 import jedi      
 from pathlib import Path
 from src.utils.config import logger
+from typing import List
 
 def find_python_files(root: str):
     """
@@ -52,14 +53,25 @@ def get_definitions_info(defs,tree, source, file_path):
             node_type = ("method" if ((d.type == "function") and (parent.type == "class"))
                          else d.type)
 
-            # Extract source code of definition
+            # Extract source code of the definition
             code_segment = ""
+            docstring = ""
+            inherits_from = []
+            # Walk tree until definition is found with ast
             if tree is not None:
                 for node in ast.walk(tree):
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == d.name and node.lineno == d.line:
                         code_segment = ast.get_source_segment(source, node)
+                        docstring = d.docstring()
+
+                        # Capture inheritance information for classes
+                        add_node_inheritance(node=node, 
+                                            inheritance_list=inherits_from)
+                        
+
                         break
 
+            
             # Save the extracted information in the dictionary
             definitions[d.full_name] = {
                 'id': d.full_name,
@@ -68,11 +80,37 @@ def get_definitions_info(defs,tree, source, file_path):
                 'file': file_path,
                 'line': d.line,
                 'code': code_segment,
+                'docstring': docstring,
                 'definition': d,
+                'inherits_from': inherits_from,
                 'parent_id': parent_id
             }
 
     return definitions
+
+def add_node_inheritance(node: ast.ClassDef, inheritance_list: List) -> None:
+    if isinstance(node, ast.ClassDef):
+        for base in node.bases:
+            if isinstance(base, ast.Name):
+                inheritance_list.append(base.id)
+            elif isinstance(base, ast.Attribute):
+                inheritance_list.append(base.attr)
+
+
+def resolve_base_class_names(script, base_class_names, lineno, col_offset):
+    """Resolve the full names of base classes using Jedi."""
+    resolved_base_classes = []
+
+    for base_class_name in base_class_names:
+        definitions = script.goto(lineno, col_offset, follow_imports=True)
+
+        for definition in definitions:
+            if definition.name == base_class_name:
+                resolved_base_classes.append(definition.full_name)
+                break
+
+    return resolved_base_classes
+
 
 
 def find_call_nodes(tree):
@@ -156,9 +194,9 @@ def get_call_pair_id(call_nodes_list, script):
     return call_pairs_list
 
 
-def get_definitions_calls(source, tree, file_path, project):
+def get_definitions_relationships(source, tree, file_path, project):
     """
-    Extract definitions (functions, classes, and methods) from a file using Jedi.
+    Extract definitions (functions, classes, and methods) and relationships (nested in, calls, and inheritance) from a file using Jedi.
     Returns a dictionary mapping a unique ID to another dictionary containing:
       - id: Unique identifier for the definition
       - name: The name of the function, class, or method
@@ -174,6 +212,30 @@ def get_definitions_calls(source, tree, file_path, project):
     defs = script.get_names(all_scopes=True, definitions=True, references=False)
     
     definitions = get_definitions_info(defs=defs, tree=tree, source=source, file_path=file_path)
+
+    # Resolve inheritance relationships
+    for def_id, info in definitions.items():
+        if info['type'] == 'class' and info['inherits_from']:
+            # Find the AST node for the class definition
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef) and node.name == info['name'] and node.lineno == info['line']:
+                    # Extract the correct lineno and col_offset for the base class
+                    for base in node.bases:
+                        if isinstance(base, ast.Name):
+                            base_class_name = base.id
+                            lineno = base.lineno
+                            col_offset = base.col_offset
+                        elif isinstance(base, ast.Attribute):
+                            base_class_name = base.attr
+                            lineno = base.lineno
+                            col_offset = base.col_offset
+                        else:
+                            continue
+
+                        # Resolve the base class name
+                        resolved_base_classes = resolve_base_class_names(script, [base_class_name], lineno, col_offset)
+                        info['inherits_from'].extend(resolved_base_classes)
+                    break
 
     call_ast_nodes = find_call_nodes(tree)
 

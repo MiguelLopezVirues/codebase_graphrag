@@ -10,4 +10,5 @@
 - Add text2Cypher QA chain
 - Add docstrings and semantic relationships with LangGraph or Neo4j GraphRag Pipelines
 - Create embeddings from code for semantic searches
+- Add library's documentation to the Graph
 - Add advanced augmentation techniques

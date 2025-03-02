@@ -4,7 +4,7 @@ from src.utils.config.logger_config import logger
 from src.utils.code_parsing import (
     find_python_files,
     parse_source,
-    get_definitions_calls
+    get_definitions_relationships
 )
 
 class GraphBuilder:
@@ -37,7 +37,7 @@ class GraphBuilder:
                 continue
             
             tree = parse_source(source, str(file_path))
-            defs, calls_list = get_definitions_calls(source=source, tree=tree, file_path=str(file_path), project=self.project)
+            defs, calls_list = get_definitions_relationships(source=source, tree=tree, file_path=str(file_path), project=self.project)
 
             for def_id, info in defs.items():
                 self.definitions[def_id] = info
@@ -49,8 +49,10 @@ class GraphBuilder:
 
         self._add_nested_edges()
         self._add_call_edges()
+        self._add_inheritance_edges()
 
         return self.graph
+    
 
     def _add_nested_edges(self):
         for def_id, info in self.definitions.items():
@@ -65,4 +67,10 @@ class GraphBuilder:
             if caller_id in self.graph.nodes and candidate_id in self.graph.nodes:
                 self.graph.add_edge(caller_id, candidate_id, relation='call')
 
+    def _add_inheritance_edges(self):
+        for def_id, info in self.definitions.items():
+            if info['type'] == 'class' and info['inherits_from']:
+                for base_class in info['inherits_from']:
+                    if base_class in self.graph.nodes:
+                        self.graph.add_edge(def_id, base_class, relation='inherits_from')
 

@@ -1,6 +1,7 @@
 import logging
 from src.utils.config.config import LOG_LEVEL, LOG_FILE
 
+# if not exists, create logs directory
 log_dir = LOG_FILE.parent
 log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -10,7 +11,7 @@ file_handler.setLevel(LOG_LEVEL)
 
 # On console, only log errors
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.ERROR) 
+stream_handler.setLevel("ERROR") 
 
 # Configure logging with both handlers
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")

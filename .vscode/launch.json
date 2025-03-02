@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Run src.main with file_path",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.main",
+            "args": [
+                "--file_path",
+                "C:\\Projects\\codebase_rag\\.venv\\Lib\\site-packages\\skforecast"
+            ],
+            "console": "integratedTerminal",
+            "preLaunchTask": "Run uv",
+            "justMyCode": true
+        }
+    ]
+}
