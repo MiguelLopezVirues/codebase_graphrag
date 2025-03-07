@@ -53,6 +53,7 @@ st.html("""<h2 style="text-align: center;">📚🔍 <i> Codebase pair programmer
 # --- Side Bar LLM API Tokens ---
 keys = {}
 with st.sidebar:
+
     st.header("Credentials:")  
     DEFAULT_OPENAI_API_KEY = config.get("OPENAI_API_KEY") or ""  # only for development environment, otherwise it should return None
     with st.popover("🔐 OpenAI"):
@@ -111,33 +112,49 @@ else:
     with st.sidebar:
         # --- Project file upload ---
         st.divider()
-        st.header("Codebase RAG Sources:")   
 
-        st.file_uploader(
-            "📄 Upload a ZIP file of your project's code", 
-            type=["zip", "rar"],
-            accept_multiple_files=False,
-            on_change=unzip_project,
-            key="codebase_project",
+        st.header("Codebase RAG Sources")
+
+        # Choose between Neo4j connection and file upload
+        use_neo4j = st.toggle(
+            label="Use Neo4j pre-existing codebase Knowledge Graph",
+            key="neo4j_toggle",
+            value=False
         )
 
-        # Create knowledge graph from the zip file with progress spinner
-        processing_placeholder = st.empty()
+        if use_neo4j:
+            st.info("Using Neo4j credentials to connect to pre-existing knowledge graph.")
 
-        if st.session_state.extracted_path and not st.session_state.knowledge_graph:
-            with processing_placeholder.container():
-                with st.spinner('Building Knowledge Graph, pushing to Neo4j and creating embeddings from your code... This may take a few minutes.'):
-                    try:
-                        logger.debug("Building knowledge_graph.")
-                        graph = build_graph(st.session_state.extracted_path)
-                        st.success("Knowledge Graph successfully built. Pushing to Neo4j and creating embeddings...")
-                        process_graph(graph=graph)
-                        st.session_state.knowledge_graph = True
+        else:
+            st.markdown("If you haven't already, upload your codebase as a ZIP file:")
+            
+            uploaded_file = st.file_uploader(
+                "📄 Upload a ZIP or RAR file of your project's code",
+                type=["zip", "rar"],
+                accept_multiple_files=False,
+                key="codebase_project"
+            )
 
-                        st.success("✅ Knowledge Graph successfully built and uploaded to Neo4j!")
-                    except Exception as e:
-                        logger.error(f"Error building knowledge_graph: {e}")
-                        st.warning(f"⚠️ Error building Knowledge Graph.")
+            if uploaded_file:
+                unzip_project()
+
+                # Create knowledge graph from the zip file with progress spinner
+                processing_placeholder = st.empty()
+
+                if st.session_state.extracted_path and not st.session_state.knowledge_graph:
+                    with processing_placeholder.container():
+                        with st.spinner('Building Knowledge Graph, pushing to Neo4j and creating embeddings from your code... This may take a few minutes.'):
+                            try:
+                                logger.debug("Building knowledge_graph.")
+                                graph = build_graph(st.session_state.extracted_path)
+                                st.success("Knowledge Graph successfully built. Pushing to Neo4j and creating embeddings...")
+                                process_graph(graph=graph)
+                                st.session_state.knowledge_graph = True
+
+                                st.success("✅ Knowledge Graph successfully built and uploaded to Neo4j!")
+                            except Exception as e:
+                                logger.error(f"Error building knowledge_graph: {e}")
+                                st.warning(f"⚠️ Error building Knowledge Graph.")
 
         st.divider()
 
@@ -169,13 +186,6 @@ else:
             conversational_qa_system_prompt = config.get("CONVERSATIONAL_QA_SYSTEM_PROMPT", None),
             model_name=model_choice
         )
-
-        cols_sidebar = st.columns(2)
-
-
-        with cols_sidebar[0]:
-            st.button("Clear Chat", on_click=lambda: st.session_state.messages.clear(), type="primary")
-
 
 
         st.divider()

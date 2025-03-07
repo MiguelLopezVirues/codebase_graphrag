@@ -1,7 +1,14 @@
 # Codebase GraphRAG
-[README Work In Progress]
+[Work In Progress]
+![Graph banner](assets/codebase_graph.png)
+
 
 ## The project
+### Router LLM
+- Semantic search + graph retrieval: Vector embedding similarity augmented with graph query to retrieve relevant nodes...
+- Graph Cypher queries:
+- Conversation memory:
+
 ### Knowledge graph configuration
 The codebase is modeled as a knowledge graph. Inside the know Class, function and method definitions and calls are modeled as nodes in the Knowledge Graph.
 - Edges: CALL, INHERITS_FROM, NESTED_IN
@@ -29,6 +36,10 @@ UV will automatically create a virtual environment with the necessary dependenci
     ```bash
     uv run streamlit run streamlit.py
     ```
+- Insert API Keys and Aura DB credentials on the sidebar. None of them are stored as you can check on the `streamlit.py` code. Aura DB offers a free tier account that you can use and is more than enough for most codebases.
+- Insert your project's code as a ZIP or RAR file on the *Codebase RAG Source* section. Knowledge Graph creation from the codebase and push to Neo4j may take a while, depending on project size. Once the Knowledge Graph has been uploaded to Neo4j, the Chatbot has your code project inside his brain 🧠!
+- If desired, you can choose the OpenAI model to use with the Chatbot.
+- You can now ask the chat questions like "What pieces of the code would I have to modify to adapt for changes in the X method from the Y class?"
 
 ## Packages
 
