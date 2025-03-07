@@ -2,6 +2,7 @@ import argparse
 from src.utils.config import config, logger
 from src.graph.graph_builder import GraphBuilder
 from src.neo4j_integration.neo4j_client import Neo4jClient
+import asyncio
 import time
 
 def parse_arguments() -> argparse.Namespace:
@@ -85,21 +86,8 @@ def process_graph(graph) -> None:
     client.close()
 
 
-def build_process_graph(file_path):
-    """
-    Orchestrate graph building and processing.
 
-    Args:
-        file_path (str): Path to the input root folder for graph building.
-    """
-    graph = build_graph(file_path)
-    try:
-        process_graph(graph)
-    except Exception as e:
-        logger.error(f"An error occurred during graph processing: {e}")
-
-
-def main() -> None:
+def build_process_graph() -> None:
     """
     Main function to orchestrate graph building and processing from command-line parsed argument.
     """
@@ -111,4 +99,4 @@ def main() -> None:
         logger.error(f"An error occurred during graph processing: {e}")
 
 if __name__ == '__main__':
-    main()
+    build_process_graph()

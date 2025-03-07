@@ -17,8 +17,6 @@ from langchain_community.vectorstores import Neo4jVector
 from src.utils.config import config, logger
 
 
-def load_project():
-    ...
 
 class RouterChat:
     """
@@ -300,10 +298,9 @@ class RouterChat:
                 logger.error(f"Error closing Neo4j connection: {e}")
 
 
-# Example usage
+# Used for debugging
 if __name__ == "__main__":
 
-    # Create the router
     router = RouterChat(
         openai_api_key = config.get("OPENAI_API_KEY"),
         neo4j_uri = config.get("NEO4J_URI",None),
@@ -320,7 +317,6 @@ if __name__ == "__main__":
         conversational_qa_system_prompt = config.get("CONVERSATIONAL_QA_SYSTEM_PROMPT", None),
     )
     
-    # Example queries
     queries = [
         """I want the TimeSeriesDifferentiator to be able to implement a pct growth differentiation besides the normal differentiation. Take your time to look at the whole class code to understand it, identify and assess the methods that would need modfication and suggest new methods as well if necessary.
 Provide detailed snippets of the neccessary code everywhere it might be needed.""",
@@ -333,5 +329,5 @@ Provide detailed snippets of the neccessary code everywhere it might be needed."
         response = router.process(query)
         print(f"Response: {response}")
     
-    # Clean up
+
     router.close()

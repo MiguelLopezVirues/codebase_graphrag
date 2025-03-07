@@ -11,7 +11,6 @@ load_dotenv(dotenv_file)
 with open(Path(__file__).parent / "prompts.yaml", "r", encoding="utf-8") as f:
     prompts = yaml.safe_load(f)
 
-
 config = {
     # Base directory 
     "BASE_DIR": Path("C:/Projects/codebase_rag"),

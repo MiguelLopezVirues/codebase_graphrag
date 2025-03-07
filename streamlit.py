@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import dotenv
-import uuid
 
 # check if it's linux so it works on Streamlit Cloud
 if os.name == 'posix':
@@ -9,11 +8,9 @@ if os.name == 'posix':
     import sys
     sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
-from langchain_core.messages import AIMessage, HumanMessage
 from src.utils.config import config, logger
-from src.utils.code_parsing import unzip_project
-from src.database import build_graph, process_graph
+from streamlit_helpers import unzip_project
+from src.database.database import build_graph, process_graph
 from src.rag import RouterChat
 
 dotenv.load_dotenv()
@@ -129,7 +126,7 @@ else:
 
         if st.session_state.extracted_path and not st.session_state.knowledge_graph:
             with processing_placeholder.container():
-                with st.spinner('Building Knowledge Graph, pushing to Neo4j and creating embeddings from your code... This may take around 10 minutes.'):
+                with st.spinner('Building Knowledge Graph, pushing to Neo4j and creating embeddings from your code... This may take a few minutes.'):
                     try:
                         logger.debug("Building knowledge_graph.")
                         graph = build_graph(st.session_state.extracted_path)

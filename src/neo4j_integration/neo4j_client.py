@@ -61,6 +61,7 @@ class Neo4jClient:
                 )
 
         logger.info("Graph successfully pushed to Neo4j.")
+        
 
 
     def add_common_label(self,target_labels, common_label):
