@@ -45,7 +45,7 @@ UV will automatically create a virtual environment with the necessary dependenci
 
 
 
-### Next steps
+## Next steps
 - Create unit tests
 - Refactor project to divide in 3 to separately deployments; 
     1. Code database creation
