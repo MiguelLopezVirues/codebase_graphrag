@@ -1,22 +1,27 @@
 import logging
-from src.utils.config.config import LOG_LEVEL, LOG_FILE
+from src.utils.config.config import config
+from src.utils.config.utils import get_log_level
 
 # if not exists, create logs directory
-log_dir = LOG_FILE.parent
+log_dir = config["LOG_FILE"].parent
 log_dir.mkdir(parents=True, exist_ok=True)
 
 # Log everything to log file
-file_handler = logging.FileHandler(LOG_FILE)
-file_handler.setLevel(LOG_LEVEL)  
+file_handler = logging.FileHandler(config["LOG_FILE"])
+file_level = get_log_level(config.get("LOG_LEVEL_FILE", "DEBUG"))
+file_handler.setLevel(file_level)
 
 # On console, only log errors
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel("ERROR") 
+stream_level = get_log_level(config.get("LOG_LEVEL_CONSOLE", "DEBUG"))
+stream_handler.setLevel(stream_level)
 
 # Configure logging with both handlers
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(formatter)
-logging.basicConfig(level=LOG_LEVEL, handlers=[file_handler, stream_handler])
 
 logger = logging.getLogger(__name__)
+logger.setLevel(file_level)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)

@@ -1,5 +1,5 @@
 import argparse
-from src.utils.config import NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, OPENAI_API_KEY, logger
+from src.utils.config import config, logger
 from src.graph.graph_builder import GraphBuilder
 from src.neo4j_integration.neo4j_client import Neo4jClient
 import time
@@ -29,13 +29,16 @@ def build_graph(file_path: str) -> object:
     Returns:
         Graph: The constructed graph object.
     """
+    start = time.time()
     logger.info("Starting graph building process...")
     builder = GraphBuilder(file_path)
     graph = builder.build()
+    end = time.time()
     logger.info(
-        "Graph built with %d nodes and %d edges.",
+        "Graph built with %d nodes and %d edges in %f seconds.",
         graph.number_of_nodes(),
-        graph.number_of_edges()
+        graph.number_of_edges(),
+        end - start
     )
     return graph
 
@@ -47,9 +50,11 @@ def process_graph(graph) -> None:
         graph (Graph): The graph object to process.
     """
 
-    client = Neo4jClient(uri=NEO4J_URI, user=NEO4J_USER, password=NEO4J_PASSWORD)
+    client = Neo4jClient(uri=config.get("NEO4J_URI"), user=config.get("NEO4J_USER"), password=config.get("NEO4J_PASSWORD"))
     client.push_graph_to_neo4j(graph, 
                                delete_previous=True)
+    
+    logger.debug("Graph pushed to Neo4j.")
     
     common_label = "CodeEntity"
     client.add_common_label(
@@ -61,18 +66,42 @@ def process_graph(graph) -> None:
         index_name="code_embedding",
         node_label=common_label
     )
+
+    logger.debug("Vector index created. Creating embeddings...")
+
+    properties = {
+        "Method": "code",
+        "Function": "code",
+        "Class": "docstring"
+    }
     
-    for label in ["Method", "Function", "Class"]:
-        property_name = "docstring" if label == "Class" else "code"
+    for label, property_name in properties.items():
         client.create_embeddings(node_label=label, 
-                                 openai_api_key=OPENAI_API_KEY, 
+                                 openai_api_key=config.get("OPENAI_API_KEY"), 
                                  on_node_property=property_name)
+        
+        logger.debug(f"Embeddings for {label} created.")
     
     client.close()
 
+
+def build_process_graph(file_path):
+    """
+    Orchestrate graph building and processing.
+
+    Args:
+        file_path (str): Path to the input root folder for graph building.
+    """
+    graph = build_graph(file_path)
+    try:
+        process_graph(graph)
+    except Exception as e:
+        logger.error(f"An error occurred during graph processing: {e}")
+
+
 def main() -> None:
     """
-    Main function to orchestrate graph building and processing.
+    Main function to orchestrate graph building and processing from command-line parsed argument.
     """
     args = parse_arguments()
     graph = build_graph(args.file_path)

@@ -1,0 +1,181 @@
+ROUTER_PROMPT: |
+  You are an expert in Python, handed with the management of a codebase knowledge graph.
+  Given a user query, determine the most suitable system to handle it. Choose from the following options:
+
+  - "vector": For general queries about the codebase in general, rather than focusing on certain nodes of the graph.
+              Avoid cases where keywords related to 'graph' or 'database' are mentioned but no specific retrieval from OUR specific database is needed.
+    Examples: "Where is the concept X applied here?", "Find information about topic Y", "What are the details of Z?"
+    Examples of when NOT to use: "How are nodes connected in a graph database?"
+
+  - "graph": For queries specific to our database that involve relationships between entities, network analysis, or structured data queries.
+              Avoid cases where keywords related to 'graph' or 'database' are mentioned but no specific retrieval from OUR specific database is needed.
+    Examples: "What's the relationship between A and B?", "What would be impacted if I make changes to X?", "Find all entities connected to C",
+              "What's he structure of the codebase?", "How many methods or functions implement Z in their code?"
+  Examples of when NOT to use: "How are nodes connected in a graph database?"
+
+  - "conversation": For general chat, opinions, clarification questions, or follow-ups to previous messages.
+    Examples: "What do you think about X?", "Can you explain your last response?", "Tell me more about that"
+
+  Respond with only one word, it being either "vector", "graph" or "conversation".
+
+  User query: {question}
+
+GRAPH_AUGMENTED_SIMILARITY_QUERY: |
+  MATCH (node)
+  WHERE node:Class OR node:Function OR node:Method
+  WITH node, score
+
+  OPTIONAL MATCH (node)-[:NESTED_IN]->(container)
+  WHERE container:Class OR container:Method OR container:Function
+
+  OPTIONAL MATCH (node)-[:INHERITS_FROM]->(parent)
+  WHERE node:Class AND parent:Class
+  WITH node, score, container, collect(parent.name)[0..2] AS parentClasses
+
+  WITH node, score, container, parentClasses,
+       CASE 
+         WHEN node:Class THEN node.docstring
+         ELSE node.code
+       END AS codeContent
+
+  OPTIONAL MATCH (method:Method)-[:NESTED_IN]->(node)
+  WHERE node:Class
+  WITH node, score, container, parentClasses, codeContent,
+       CASE
+         WHEN node:Class THEN collect(method.name)[0..5]
+         ELSE []
+       END AS methodNames
+
+  RETURN 
+    CASE WHEN node:Class THEN "Class: " + node.name + "\n" 
+         WHEN node:Function THEN "Function: " + node.name + "\n"
+         WHEN node:Method THEN "Method: " + node.name + "\n"
+    END +
+    CASE WHEN container IS NOT NULL 
+         THEN "Located in: " + container.name + "\n" 
+         ELSE "" 
+    END +
+    CASE WHEN size(parentClasses) > 0 
+         THEN "Inherits from: " + apoc.text.join(parentClasses, ", ") + "\n" 
+         ELSE "" 
+    END +
+    CASE WHEN node:Class AND size(methodNames) > 0
+         THEN "Methods include: " + apoc.text.join(methodNames, ", ") + "\n"
+         ELSE ""
+    END +
+    "File: " + node.file + " (line " + node.line + ")\n\n" + 
+    codeContent AS text,
+    score,
+    {
+      type: CASE 
+        WHEN node:Class THEN "class"
+        WHEN node:Function THEN "function"
+        WHEN node:Method THEN "method"
+      END,
+      name: node.name,
+      file: node.file
+    } AS metadata
+
+VECTOR_QA_SYSTEM_PROMPT: |
+  You are a helpful pair programming assistant that explains and helps with code.
+  When answering questions, use the retrieved code context to provide accurate information.
+  For classes, focus on their purpose and methods. For functions and methods, explain what they do.
+  Use the code context to provide concrete examples and relevant code snippets from the codebase.
+  Finally, make use of the chat memory to inform your answers about the conversation context.
+
+  Additional instructions:
+  - Always start your answers with `Using my graph augmented vector similarity retrieval capabilities...`
+  - Whenever you don't have context about the question, and you don't know the answer or are unsure, answer `I don't know`.
+  - Whenever you don't have context about the question, but can answer it from your own knowledge base, 
+    answer something like `I do not see content about your question in the code context, but based on my training knowledge...`
+
+CYPHER_GENERATION_TEMPLATE: |
+  Task: Generate Cypher statement to query a graph database.
+  Instructions:
+  Use only the provided relationship types and properties in the schema.
+  Do not use any other relationship types or properties that are not provided.
+  Always return the question too.
+  It is very important that your query ALWAYS returns the most relevant node or 
+  relationship properties instead of the whole node or relationship to save tokens.
+  Never return whole nodes without explicitly being told so.
+  It is very important that you NEVER perform database modification queries unless explicitly told so.
+
+
+  Schema:
+  {schema}
+  Note: Do not include any explanations or apologies in your responses.
+  Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
+  Do not include any text except the generated Cypher statement.
+  Examples: Here are a few examples of generated Cypher statements for particular questions:
+
+  # What are the nodes directly related to example_node?
+  MATCH (node)-[relationship_type]-(other_nodes)
+  WHERE node.name = 'example.node'
+  RETURN other_nodes.name, relationship_type
+
+  # What are the function or method nodes that have a relationship towards example_node?
+  MATCH (node)<-[relationship_type]-(other_nodes:Function|Method)
+  WHERE node.name = 'example.node'
+  RETURN other_nodes.name, relationship_type
+
+  # What are the function or method nodes that call example_node?
+  MATCH (node)<-[:CALL]-(other_nodes:Function|Method)
+  WHERE node.name = 'example.node'
+  RETURN other_nodes.name
+
+  # What is the file that stores example?
+  MATCH (node)
+  WHERE node.name = 'example'
+  RETURN node.file
+
+  # Inside what function or method is example_function defined?
+  MATCH (node)<-[relationship_type:NESTED_IN]-(other_node)
+  WHERE node.name = 'example_function'
+  RETURN other_node.name
+
+  # Tell me the dependencies the example_node has in the codebase
+  MATCH (example_node)-[relationship_type:CALL|INHERITS_FROM|NESTED_IN]->(dependencies)
+  RETURN dependencies.name, dependencies.file, relationship_type
+
+  # Tell me the name of the parts of the code would be affected by a change in example node
+  MATCH (example_node)<-[relationship_type:CALL|INHERITS_FROM]-(affected)
+  RETURN affected.name, relationship_type
+
+  # Tell me what code I would need to change if I make X change to example_node
+  MATCH (example_node)<-[r:CALL|INHERITS_FROM]-(affected)
+  RETURN affected.name, affected.code, relationship_type
+
+  The question is:
+  {question}
+
+  Some questions might not ask you to retrieve anything from the database. In those cases, use the chat history to retrieve the relevant information.
+  Chat History:
+  {chat_history}
+
+GRAPH_QA_GENERATION_TEMPLATE: |
+  You are an assistant specialized in retrieving and interpreting code snippets from a graph database.
+  Based on the user's question and the provided context, identify relevant pieces of code within the node properties and present them clearly.
+  Some questions might ask about previous messages. Therefore, always use the chat_history to inform your answers.
+
+  Chat_history:
+  {chat_history}
+
+  User's Question:
+  {question}
+
+  Context from Database:
+  {context}
+
+  Additional instructions:
+  - Always start your answers with `Using my graph retrieval capabilities...`
+
+
+
+CONVERSATIONAL_QA_SYSTEM_PROMPT: |
+  You are a helpful pair programming assistant that explains and helps with code.
+  When answering questions, look at your chat memory to look for relevant context. If no context is available use your own knowledge to answer.
+  For classes, focus on their purpose and methods. For functions and methods, explain what they do.
+  Use the code context to provide concrete examples and relevant code snippets from the codebase.
+
+  IMPORTANT: Whenever you don't know the answer or are unsure, say `I don't know`.
+

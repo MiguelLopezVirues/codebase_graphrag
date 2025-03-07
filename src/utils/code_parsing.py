@@ -5,6 +5,58 @@ import jedi
 from pathlib import Path
 from src.utils.config import logger
 from typing import List
+import zipfile
+import rarfile
+import streamlit as st
+
+def unzip_project():
+    """
+    Unzips a ZIP or RAR file uploaded through Streamlit's file uploader.
+    The function extracts the contents to a specified location.
+    """
+    # Get the uploaded file from session state
+    uploaded_file = st.session_state.codebase_project
+    
+    if uploaded_file is not None:
+        extract_path = Path("./extracted_files")
+        
+        os.makedirs(extract_path, exist_ok=True)
+        
+        file_extension = Path(uploaded_file.name).suffix.lower()
+        
+        try:
+            # Write the uploaded file to a temporary location
+            temp_path = Path(f"./temp_{uploaded_file.name}")
+            with open(temp_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            # Extract based on file type
+            if file_extension == ".zip":
+                with zipfile.ZipFile(temp_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_path)
+                st.success(f"ZIP file successfully extracted to {extract_path}")
+            
+            elif file_extension == ".rar":
+                with rarfile.RarFile(temp_path, 'r') as rar_ref:
+                    rar_ref.extractall(extract_path)
+                st.success(f"RAR file successfully extracted to {extract_path}")
+            
+            else:
+                st.error("Unsupported file format. Please upload a ZIP or RAR file.")
+
+            # Clean up the temporary file
+            os.remove(temp_path)
+
+            # Get path to extracted file
+            st.session_state.extracted_path = str(next(Path(extract_path).iterdir(), None))
+            
+            return extract_path
+            
+        except Exception as e:
+            st.error(f"Error extracting file: {str(e)}")
+            return None
+    else:
+        return None
 
 def find_python_files(root: str):
     """
@@ -14,7 +66,7 @@ def find_python_files(root: str):
     root_path = Path(root)
     for path in root_path.rglob("*.py"):
         # Use pathlib to inspect parts of the path:
-        if any(part.lower() == "tests" for part in path.parts):
+        if any(part.lower() == "test" for part in path.parts):
             continue
         if path.name == "__init__.py":
             continue
@@ -31,6 +83,19 @@ def parse_source(source: str, filename: str):
         logger.error(f"Syntax error in {filename}: {e}")
         raise
 
+def get_parent_id(definition):
+    try:
+        parent = definition.parent()
+        if parent is not None and parent.type in ('function', 'class'):
+            parent_id = parent.full_name
+        else:
+            parent_id = None
+    except Exception as e:
+        print(f"Error getting parent for {definition.name}: {e}")
+        parent_id = None
+    finally:
+        return parent, parent_id
+
 def get_definitions_info(defs,tree, source, file_path):
     definitions = {}
 
@@ -39,15 +104,7 @@ def get_definitions_info(defs,tree, source, file_path):
         if d.type in ('function', 'class') and d.full_name:
 
             # Get parent id for nested relationships
-            try:
-                parent = d.parent()
-                if parent is not None and parent.type in ('function', 'class'):
-                    parent_id = parent.full_name
-                else:
-                    parent_id = None
-            except Exception as e:
-                print(f"Error getting parent for {d.name}: {e}")
-                parent_id = None
+            parent, parent_id = get_parent_id(d)
 
             # Determine if the function is actually a method
             node_type = ("method" if ((d.type == "function") and (parent.type == "class"))
@@ -68,14 +125,18 @@ def get_definitions_info(defs,tree, source, file_path):
                         add_node_inheritance(node=node, 
                                             inheritance_list=inherits_from)
                         
-
                         break
-
+            
+            # For methods, include class name in its name
+            # node_name = ".".join(d.full_name.split(".")[-2]) if node_type == "method" else d.name
+            node_name = d.name
+            if node_type == "method":
+                node_name = ".".join([parent.name, d.name])
             
             # Save the extracted information in the dictionary
             definitions[d.full_name] = {
                 'id': d.full_name,
-                'name': d.name,
+                'name': node_name,
                 'type': node_type,
                 'file': file_path,
                 'line': d.line,

@@ -1,5 +1,7 @@
-import networkx as nx  # For constructing and managing graphs (nodes and edges)
+import networkx as nx 
 import jedi
+from typing import List, Dict, Tuple
+from joblib import Parallel, delayed
 from src.utils.config.logger_config import logger
 from src.utils.code_parsing import (
     find_python_files,
@@ -28,31 +30,57 @@ class GraphBuilder:
         """
         # Create nodes: Gather all definitions from all Python files
         logger.info(f"PROJECT ROOT: {self.project_root}")
-        for file_path in find_python_files(self.project_root):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    source = f.read()
-            except Exception as e:
-                logger.error(f"Error reading {file_path}: {e}")
-                continue
-            
-            tree = parse_source(source, str(file_path))
-            defs, calls_list = get_definitions_relationships(source=source, tree=tree, file_path=str(file_path), project=self.project)
+
+        file_source_tuple_list = Parallel(n_jobs=-1)(delayed(self._read_file)(file_path) 
+                                      for file_path in find_python_files(self.project_root))
+        
+
+        for source, file_path in file_source_tuple_list:
+            defs, calls_list = self._process_file(source, file_path)
 
             for def_id, info in defs.items():
-                self.definitions[def_id] = info
-                # Add the definition as a node with its attributes
+                self.definitions.update(defs)
                 self.graph.add_node(def_id, **info)
 
-            # Store call relationships until all nodes are created
             self.calls.extend(calls_list)
-
+        
         self._add_nested_edges()
         self._add_call_edges()
         self._add_inheritance_edges()
 
         return self.graph
     
+    def _read_file(self, file_path: str) -> Tuple[str, str]:
+        """
+        Reads the content of a single file.
+
+        Args:
+            file_path (str): Path to the file to be read.
+
+        Returns:
+            Dict[str, str]: A dictionary with the file path as key and file content as value.
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read(), file_path
+        except Exception as e:
+            logger.error(f"Error reading {file_path}: {e}")
+        
+        
+    def _process_file(self, source, file_path) -> Tuple:
+        """
+        Process a single file, returning definitions and calls.
+        """
+        tree = parse_source(source, str(file_path))
+        defs, calls_list = get_definitions_relationships(
+            source=source, 
+            tree=tree, 
+            file_path=str(file_path), 
+            project=self.project
+        )
+        return defs, calls_list
+    
+   
 
     def _add_nested_edges(self):
         for def_id, info in self.definitions.items():

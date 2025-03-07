@@ -20,4 +20,5 @@ dependencies = [
     "langchain-neo4j>=0.3.0",
     "langchain-openai>=0.3.6",
     "streamlit>=1.42.2",
+    "rarfile>=4.2",
 ]
