@@ -3,16 +3,14 @@
 ![Graph banner](assets/codebase_graph.png)
 
 
-## The project
+## About the project
 ### Router LLM
 - Semantic search + graph retrieval: Vector embedding similarity augmented with graph query to retrieve relevant nodes...
-- Graph Cypher queries:
-- Conversation memory:
+- Graph Cypher queries: Used to traverse and extract relevant information from the Knowledge Graph based on context and semantic relationships.
+- Conversation memory: Maintains context throughout user interaction, enabling effective and continuous dialogue.
 
 ### Knowledge graph configuration
-The codebase is modeled as a knowledge graph. Inside the know Class, function and method definitions and calls are modeled as nodes in the Knowledge Graph.
-- Edges: CALL, INHERITS_FROM, NESTED_IN
-- Explicit import links from within the project are ignored, modeled as a direct relationship from CALL context to -> DEFINITION context
+The codebase is modeled as a knowledge graph. Inside the knowledge graph, Class, Function and Method definitions are modeled as nodes in the Knowledge Graph. Dependencies in the form of CALL, INHERITS_FROM and NESTED_IN are modeled as relationship or edges. Explicit import links from within the project are ignored, modeled as a direct relationship from CALL context to -> DEFINITION context.
 
 ### Notes
 - The parsing of code ignores files inside any folder called tests.
@@ -42,15 +40,20 @@ UV will automatically create a virtual environment with the necessary dependenci
 - You can now ask the chat questions like "What pieces of the code would I have to modify to adapt for changes in the X method from the Y class?"
 
 ## Packages
-
-
+- **Streamlit**: User-friendly interactive web frontend.
+- **Neo4j Aura**: Managed Neo4j service used as the Knowledge Graph database.
+- **OpenAI API**: Provides embeddings and LLM responses.
+- **Astral UV**: Dependency management tool.
+- **LangChain**: Framework facilitating RAG and LLM integration.
+- **Cypher**: Query language used for graph retrieval in Neo4j.
 
 ## Next steps
 - Create unit tests
 - Refactor project to divide in 3 to separately deployments; 
-    1. Code database creation
+    1. Code database creation [Work in Progress]
     2. RAG LLMs 
     3. Frontend app 
 - Refactor graph build and upload to Neo4j processes to asynchronous and parallel to make the RAG knowledge base creation faster. 
 - Adapt for private LLM endpoint integration
 - Add option to plug in official code documentation
+- Model file structure on top of the code interactions.
