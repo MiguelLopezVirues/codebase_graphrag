@@ -15,6 +15,16 @@ The codebase is modeled as a knowledge graph. Inside the knowledge graph, Class,
 ### Notes
 - The parsing of code ignores files inside any folder called tests.
 
+## Technologies
+- **Neo4j Aura**: Managed Neo4j service used as the Knowledge Graph database.
+- **Cypher**: Query language used for graph retrieval in Neo4j.
+- **OpenAI API**: Provides embeddings and LLM responses.
+- **LangChain**: Framework facilitating RAG and LLM integration.
+- **Astral UV**: Dependency management tool.
+- **Streamlit**: User-friendly interactive web frontend.
+
+## Packages
+
 ## Instructions
 ### Installation
 This project uses Astral's UV to manage dependencies. Using UV, the both sstatic and dynamic dependencies are robustly handled by the uv.lock file.
@@ -39,13 +49,6 @@ UV will automatically create a virtual environment with the necessary dependenci
 - If desired, you can choose the OpenAI model to use with the Chatbot.
 - You can now ask the chat questions like "What pieces of the code would I have to modify to adapt for changes in the X method from the Y class?"
 
-## Packages
-- **Streamlit**: User-friendly interactive web frontend.
-- **Neo4j Aura**: Managed Neo4j service used as the Knowledge Graph database.
-- **OpenAI API**: Provides embeddings and LLM responses.
-- **Astral UV**: Dependency management tool.
-- **LangChain**: Framework facilitating RAG and LLM integration.
-- **Cypher**: Query language used for graph retrieval in Neo4j.
 
 ## Next steps
 - Create unit tests
