@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: codebase-rag
+    Description: Name of your project for resource naming
+
+  ECRRepositoryName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/codebase-rag/graph-builder/s3-repository-name"
+
+Resources:
+  # IAM Role for Lambda
+  CodebaseRagLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-lambda-exec-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+            Action: 
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub "${ProjectName}-lambda-container-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - !Sub "arn:aws:s3:::${CodeZipfilesBucket}"
+                  - !Sub "arn:aws:s3:::${CodeZipfilesBucket}/*"
+              - Effect: Allow
+                Action:
+                  - "ssm:GetParameter"
+                  - "ssm:GetParameters"
+                  - "ssm:GetParametersByPath"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/*"
+
+  # Lambda Function (Container Image)
+  CodebaseRagProcessor:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-processor"
+      Role: !GetAtt CodebaseRagLambdaRole.Arn
+      PackageType: Image
+      Code:
+        ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:latest"
+      MemorySize: 2048
+      Timeout: 900  # Max execution time (15 minutes)
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref CodeZipfilesBucket
+      Architectures:
+        - x86_64
+
+  # EventBridge Rule to Trigger Lambda
+  CodeZipfilesUploadTrigger:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}-zipfile-upload-trigger"
+      Description: "Triggers Lambda function when code zipfiles are uploaded to S3"
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "Object Created"
+        detail:
+          bucket:
+            name:
+              - !Ref CodeZipfilesBucket
+      Targets:
+        - Arn: !GetAtt CodebaseRagProcessor.Arn
+          Id: "CodebaseRagLambdaTarget"
+
+  # Permission for EventBridge to Invoke Lambda
+  CodebaseRagLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref CodebaseRagProcessor
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt CodeZipfilesUploadTrigger.Arn
+
+
+Outputs:
+  CodebaseRagLambdaArn:
+    Description: ARN of the Codebase RAG Lambda Function
+    Value: !GetAtt CodebaseRagProcessor.Arn
+
+  CodeZipfilesBucketName:
+    Description: S3 Bucket for storing code zipfiles
+    Value: !Ref CodeZipfilesBucket
+
+  CodebaseRagECRUri:
+    Description: URI for the Codebase RAG ECR repository
+    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}"

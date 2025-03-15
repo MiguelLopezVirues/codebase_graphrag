@@ -1,7 +1,10 @@
 from dotenv import load_dotenv, find_dotenv
+from src.utils.config.utils import get_ssm_parameter
 import yaml
 import os
 from pathlib import Path
+
+BASE_DIR = Path(__file__)
 
 # Load environment variables
 dotenv_file = find_dotenv()
@@ -12,14 +15,11 @@ with open(Path(__file__).parent / "prompts.yaml", "r", encoding="utf-8") as f:
     prompts = yaml.safe_load(f)
 
 config = {
-    # Base directory 
-    "BASE_DIR": Path("C:/Projects/codebase_rag"),
-
     # Neo4j connection settings
-    "NEO4J_URI": os.getenv("NEO4J_URI_AURADB", None),
-    "NEO4J_USER": os.getenv("NEO4J_USER_AURADB", None),
-    "NEO4J_PASSWORD": os.getenv("NEO4J_PASS_AURADB", None),
-    "NEO4J_DATABASE": os.getenv("NEO4J_DATABASE", None),
+    "NEO4J_URI": get_ssm_parameter("/codebase-rag/neo4j-uri", decription=False) or os.getenv("NEO4J_URI_AURADB", None),
+    "NEO4J_USER": get_ssm_parameter("/codebase-rag/neo4j-user", decription=False) or os.getenv("NEO4J_USER_AURADB", None),
+    "NEO4J_PASSWORD": get_ssm_parameter("/codebase-rag/neo4j-password", decription=True) or os.getenv("NEO4J_PASS_AURADB", None),
+    "NEO4J_DATABASE": get_ssm_parameter("/codebase-rag/neo4j-database", decription=False) or os.getenv("NEO4J_DATABASE", "neo4j"),
 
     # Neo4j vector store details - DO NOT CHANGE OR DO WITH EXTREME CAUTION
     "VECTOR_INDEX_NAME": "code_embedding",
@@ -39,8 +39,8 @@ config = {
     # Logging configuration
     "LOG_LEVEL": "INFO",
     "LOG_LEVEL_CONSOLE": "ERROR",
-    "LOG_FILE": Path(os.getenv("PROJECT_ROOT_FOLDER", "")) / "logs" / "app.log",
+    "LOG_FILE": Path("/tmp/logs/app.log") if os.getenv("AWS_EXECUTION_ENV") else Path(os.getenv("PROJECT_ROOT_FOLDER", str(BASE_DIR.parent.parent.parent.parent))) / "tmp" / "app.log",
 
     # API Keys
-    "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+    "OPENAI_API_KEY": get_ssm_parameter("/codebase-rag/openai-api-key", decription=True) or os.getenv("OPENAI_API_KEY"),
 }

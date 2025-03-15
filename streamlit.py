@@ -10,7 +10,7 @@ if os.name == 'posix':
 
 from src.utils.config import config, logger
 from streamlit_helpers import unzip_project
-from src.database.database import build_graph, process_graph
+from src.database.graph_database_builder import build_graph, process_graph
 from src.rag import RouterChat
 
 dotenv.load_dotenv()

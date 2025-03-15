@@ -1,0 +1,66 @@
+2025-03-12 10:15:14,174 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 10:16:15,044 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 10:17:14,829 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 11:33:27,191 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:13:47,921 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:15:35,545 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:15:35,546 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 12:15:35,547 - src.utils.config.logger_config - INFO - PROJECT ROOT: test/skforecast
+2025-03-12 12:16:14,642 - src.utils.config.logger_config - INFO - Graph built with 351 nodes and 589 edges in 39.096590 seconds.
+2025-03-12 12:16:15,942 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 12:16:59,264 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 12:16:59,264 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 12:16:59,425 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...
+2025-03-12 12:18:47,897 - src.utils.config.logger_config - DEBUG - Embeddings for Method created.
+2025-03-12 12:19:44,817 - src.utils.config.logger_config - ERROR - An error occurred during graph processing: Existing exports of data: object cannot be re-sized
+2025-03-12 12:20:31,003 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:20:31,005 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 12:20:31,005 - src.utils.config.logger_config - INFO - PROJECT ROOT: .venv/Lib/site-packages/skforecast
+2025-03-12 12:20:31,010 - src.utils.config.logger_config - INFO - Graph built with 0 nodes and 0 edges in 0.003999 seconds.
+2025-03-12 12:20:32,337 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 12:20:32,664 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 12:20:32,664 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 12:20:32,869 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...
+2025-03-12 12:20:33,000 - src.utils.config.logger_config - DEBUG - Embeddings for Method created.
+2025-03-12 12:20:33,088 - src.utils.config.logger_config - DEBUG - Embeddings for Function created.
+2025-03-12 12:20:33,184 - src.utils.config.logger_config - DEBUG - Embeddings for Class created.
+2025-03-12 12:20:33,185 - src.utils.config.logger_config - DEBUG - Driver closed successfully.
+2025-03-12 12:21:46,726 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:21:46,727 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 12:21:46,727 - src.utils.config.logger_config - INFO - PROJECT ROOT: .venv/Lib/site-packages/skforecast
+2025-03-12 12:22:35,181 - src.utils.config.logger_config - INFO - Graph built with 420 nodes and 734 edges in 48.453789 seconds.
+2025-03-12 12:22:36,586 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 12:23:28,983 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 12:23:28,983 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 12:23:29,157 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...
+2025-03-12 12:25:36,375 - src.utils.config.logger_config - DEBUG - Embeddings for Method created.
+2025-03-12 12:26:42,197 - src.utils.config.logger_config - DEBUG - Embeddings for Function created.
+2025-03-12 12:26:57,339 - src.utils.config.logger_config - DEBUG - Embeddings for Class created.
+2025-03-12 12:26:57,344 - src.utils.config.logger_config - DEBUG - Driver closed successfully.
+2025-03-12 12:56:34,202 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 12:56:34,205 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 12:56:34,205 - src.utils.config.logger_config - INFO - PROJECT ROOT: .venv/Lib/site-packages/skforecast
+2025-03-12 12:57:26,707 - src.utils.config.logger_config - INFO - Graph built with 420 nodes and 734 edges in 52.500450 seconds.
+2025-03-12 12:57:28,309 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 12:58:23,928 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 12:58:23,929 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 12:58:24,349 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...
+2025-03-12 13:00:31,269 - src.utils.config.logger_config - DEBUG - Embeddings for Method created.
+2025-03-12 13:01:37,585 - src.utils.config.logger_config - DEBUG - Embeddings for Function created.
+2025-03-12 13:02:00,066 - src.utils.config.logger_config - ERROR - An error occurred during graph processing: Existing exports of data: object cannot be re-sized
+2025-03-12 13:02:26,331 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 13:02:26,332 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 13:02:26,332 - src.utils.config.logger_config - INFO - PROJECT ROOT: test/skforecast
+2025-03-12 13:03:14,112 - src.utils.config.logger_config - INFO - Graph built with 420 nodes and 734 edges in 47.779006 seconds.
+2025-03-12 13:03:17,218 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 13:04:16,013 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 13:04:16,014 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 13:04:16,190 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...
+2025-03-12 13:05:41,061 - src.utils.config.logger_config - DEBUG - URI: neo4j+s://59d1cb3a.databases.neo4j.io
+2025-03-12 13:05:41,062 - src.utils.config.logger_config - INFO - Starting graph building process...
+2025-03-12 13:05:41,062 - src.utils.config.logger_config - INFO - PROJECT ROOT: test/skforecast/skforecast
+2025-03-12 13:06:30,297 - src.utils.config.logger_config - INFO - Graph built with 420 nodes and 734 edges in 49.233663 seconds.
+2025-03-12 13:06:32,588 - src.utils.config.logger_config - INFO - Clearing existing data in Neo4j...
+2025-03-12 13:07:25,935 - src.utils.config.logger_config - INFO - Graph successfully pushed to Neo4j.
+2025-03-12 13:07:25,936 - src.utils.config.logger_config - DEBUG - Graph pushed to Neo4j.
+2025-03-12 13:07:26,102 - src.utils.config.logger_config - DEBUG - Vector index created. Creating embeddings...

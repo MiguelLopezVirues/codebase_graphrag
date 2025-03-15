@@ -12,7 +12,6 @@ dependencies = [
     "networkx>=3.4.2",
     "openai>=1.63.0",
     "py2neo>=2021.2.4",
-    "skforecast>=0.14.0",
     "tiktoken>=0.9.0",
     "jedi>=0.19.2",
     "libcst>=1.6.0",
@@ -21,4 +20,9 @@ dependencies = [
     "langchain-openai>=0.3.6",
     "streamlit>=1.42.2",
     "rarfile>=4.2",
+    "boto3>=1.37.9",
+    "fastapi>=0.115.11",
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0.2",
+    "skforecast>=0.15.0",
 ]

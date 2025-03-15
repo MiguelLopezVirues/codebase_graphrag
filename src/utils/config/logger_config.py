@@ -2,7 +2,6 @@ import logging
 from src.utils.config.config import config
 from src.utils.config.utils import get_log_level
 
-# if not exists, create logs directory
 log_dir = config["LOG_FILE"].parent
 log_dir.mkdir(parents=True, exist_ok=True)
 

@@ -17,7 +17,7 @@ class Neo4jClient:
                 session.run("RETURN 1")
 
         except Exception as e:
-            logger.error(f"There was an error connecting to Neo4j: {e}")
+            logger.error(f"There was an error connecting to Neo4j: {e}. Make sure the database instance is running.")
 
         return driver
     

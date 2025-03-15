@@ -1,7 +1,7 @@
 import networkx as nx 
 import jedi
 from typing import List, Dict, Tuple
-from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
 from src.utils.config.logger_config import logger
 from src.utils.code_parsing import (
     find_python_files,
@@ -31,8 +31,12 @@ class GraphBuilder:
         # Create nodes: Gather all definitions from all Python files
         logger.info(f"PROJECT ROOT: {self.project_root}")
 
-        file_source_tuple_list = Parallel(n_jobs=-1)(delayed(self._read_file)(file_path) 
-                                      for file_path in find_python_files(self.project_root))
+        # file_source_tuple_list = Parallel(n_jobs=-1)(delayed(self._read_file)(file_path) 
+        #                               for file_path in find_python_files(self.project_root))
+
+        file_source_tuple_list = []
+        for file_path in find_python_files(self.project_root):
+            file_source_tuple_list.append(self._read_file(file_path=file_path))
         
 
         for source, file_path in file_source_tuple_list:
